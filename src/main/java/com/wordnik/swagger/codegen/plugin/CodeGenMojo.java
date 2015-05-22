@@ -16,23 +16,30 @@ package com.wordnik.swagger.codegen.plugin;
  * limitations under the License.
  */
 
-import com.wordnik.swagger.codegen.ClientOptInput;
-import com.wordnik.swagger.codegen.ClientOpts;
-import com.wordnik.swagger.codegen.CodegenConfig;
-import com.wordnik.swagger.codegen.DefaultGenerator;
-import com.wordnik.swagger.models.Swagger;
+import static com.wordnik.swagger.codegen.plugin.AdditionalParams.TEMPLATE_DIR_PARAM;
 import io.swagger.parser.SwaggerParser;
+
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.ServiceLoader;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.reflection.Reflector;
+import org.codehaus.plexus.util.reflection.ReflectorException;
 
-import java.io.File;
-import java.util.ServiceLoader;
-
-import static com.wordnik.swagger.codegen.plugin.AdditionalParams.TEMPLATE_DIR_PARAM;
+import com.wordnik.swagger.codegen.ClientOptInput;
+import com.wordnik.swagger.codegen.ClientOpts;
+import com.wordnik.swagger.codegen.CodegenConfig;
+import com.wordnik.swagger.codegen.DefaultGenerator;
+import com.wordnik.swagger.models.Swagger;
 
 /**
  * Goal which generates client/server code from a swagger json/yaml definition.
@@ -66,6 +73,8 @@ public class CodeGenMojo extends AbstractMojo {
     @Parameter(name = "language", required = true)
     private String language;
 
+    @Parameter
+    private Map parameters;
 
     /**
      * Add the output directory to the project as a source root, so that the
@@ -90,7 +99,23 @@ public class CodeGenMojo extends AbstractMojo {
         if (null != templateDirectory) {
             config.additionalProperties().put(TEMPLATE_DIR_PARAM, templateDirectory.getAbsolutePath());
         }
-
+        
+        Reflector parametersSetter = new Reflector();
+        if ( parameters != null ) {
+            for ( Object k : parameters.keySet() ) {
+            	try {
+    				Method m = parametersSetter.getMethod(config.getClass(), "set" + StringUtils.capitalise(k.toString()), new Class[] { String.class });
+    				if ( m != null ) {
+    					m.invoke(config, parameters.get(k));
+    				} else {
+    					getLog().warn("There is no setter for property '" + k +"' wich take a string as argument");
+    				}
+    			} catch (Exception e) {
+    				throw new MojoExecutionException("Cannot set property '" + k +"' with value '" + parameters.get(k) + "': " + e.getMessage() );
+    			}
+            }        	
+        }
+        
         ClientOptInput input = new ClientOptInput().opts(new ClientOpts()).swagger(swagger);
         input.setConfig(config);
         new DefaultGenerator().opts(input).generate();
