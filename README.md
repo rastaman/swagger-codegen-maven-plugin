@@ -47,18 +47,10 @@ mvn clean compile
   	<groupId>org.garethevans.maven.plugins</groupId>
   	<artifactId>swagger-codegen-maven-plugin</artifactId>
   	<version>0.0.1-SNAPSHOT</version>
+  	<configuration>
+  		<inputSpec>src/main/resources/api.yaml</inputSpec>
+  	</configuration>
   	<executions>
-  		<execution>
-		    <id>generate-client</id>
-    		<phase>generate-sources</phase>
-    		<goals>
-    			<goal>generate</goal>
-    		</goals>
-    		<configuration>
-    			<inputSpec>src/main/resources/api.yaml</inputSpec>
-    			<language>java</language>
-    		</configuration>
-  		</execution>
   		<execution>
     		<id>generate-server</id>
     		<phase>generate-sources</phase>
@@ -66,11 +58,10 @@ mvn clean compile
     			<goal>generate</goal>
     		</goals>
     		<configuration>
-    			<inputSpec>src/main/resources/api.yaml</inputSpec>
     			<language>jaxrs</language>
     			<parameters>
-    				<apiPackage>io.expansible.api</apiPackage>
-    				<modelPackage>io.expansible.model</modelPackage>
+    				<apiPackage>my.app.api</apiPackage>
+    				<modelPackage>my.app.model</modelPackage>
     			</parameters>
     		</configuration>
   		</execution>
@@ -82,9 +73,8 @@ mvn clean compile
     		</goals>
     		<configuration>
     			<language>scala</language>
-    			<inputSpec>src/main/resources/api.yaml</inputSpec>
     			<parameters>
-    				<invokerPackage>io.swagger.scala</invokerPackage>
+    				<invokerPackage>my.app.scala</invokerPackage>
     				<authPreemptive>true</authPreemptive>    	
     			</parameters>
     		</configuration>
@@ -96,11 +86,10 @@ mvn clean compile
     			<goal>generate</goal>
     		</goals>
     		<configuration>
-    			<inputSpec>src/main/resources/api.yaml</inputSpec>
     			<language>spring-mvc</language>
     			<parameters>
     				<title>${project.name} Spring MVC Server</title>
-    				<invokerPackage>io.swagger.spring</invokerPackage>
+    				<invokerPackage>my.app.spring</invokerPackage>
     			</parameters>
     		</configuration>
   		</execution>  	
