@@ -41,4 +41,21 @@ mvn clean compile
 - `output` - target output path (default is `${project.build.directory}/generated-sources/swagger`)
 - `templateDirectory` - directory with mustache templates
 - `addCompileSourceRoot` - add the output directory to the project as a source root (`true` by default)
-
+- `parameters` - a list of properties to set on the generator (if he has setters and getters for it) :
+```
+<execution>
+  <id>generate-server</id>
+  <phase>generate-sources</phase>
+  <goals>
+    <goal>generate</goal>
+  </goals>
+  <configuration>
+    <inputSpec>src/main/resources/api.yaml</inputSpec>
+    <language>jaxrs</language>
+    <parameters>
+      <apiPackage>my.app.api</apiPackage>
+      <modelPackage>my.app.model</modelPackage>
+    </parameters>
+  </configuration>
+</execution>
+```
