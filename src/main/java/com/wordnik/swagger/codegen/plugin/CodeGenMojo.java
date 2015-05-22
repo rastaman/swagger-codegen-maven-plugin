@@ -73,6 +73,10 @@ public class CodeGenMojo extends AbstractMojo {
     @Parameter(name = "language", required = true)
     private String language;
 
+    /**
+     * A map of parameters to set on the generator, which contain the name of the field
+     * and the value to set. Currently only boolean and string properties are supported.
+     */
     @Parameter
     private Map parameters;
 
@@ -105,10 +109,18 @@ public class CodeGenMojo extends AbstractMojo {
             for ( Object k : parameters.keySet() ) {
             	try {
     				Method m = parametersSetter.getMethod(config.getClass(), "set" + StringUtils.capitalise(k.toString()), new Class[] { String.class });
+    				if ( m == null ) {
+    					// try to set a boolean
+    					m = parametersSetter.getMethod(config.getClass(), "set" + StringUtils.capitalise(k.toString()), new Class[] { Boolean.class });
+    				}
     				if ( m != null ) {
-    					m.invoke(config, parameters.get(k));
+    					if ( m.getParameterTypes()[0] == String.class) {
+        					m.invoke(config, parameters.get(k));
+    					} else {
+        					m.invoke(config, Boolean.parseBoolean( parameters.get(k).toString() ) );
+    					}
     				} else {
-    					getLog().warn("There is no setter for property '" + k +"' wich take a string as argument");
+    					getLog().warn("There is no setter for property '" + k +"' wich take a string or boolean argument");
     				}
     			} catch (Exception e) {
     				throw new MojoExecutionException("Cannot set property '" + k +"' with value '" + parameters.get(k) + "': " + e.getMessage() );
